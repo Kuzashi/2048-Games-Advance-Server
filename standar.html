@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Game</title>
+    <link rel="stylesheet" href="standar.css">
+</head>
+<body>
+  <canvas id="games"></canvas>
+    <h1>2048 Game!</h1>
+    <p id="make">Made By: Kz.Studio</p>
+    
+    <div id="rubelDisplay">Rubel: 0</div>
+    
+    <div id="abilities-container">
+  <button class="abilities" onclick="activateRocket()">🚀(<span id="stock-rocket">0</span>)</button>
+  <button class="abilities" onclick="activeAbility('horizontal')">↔️(<span id="stock-horizontal">0</span>)</button>
+  <button class="abilities" onclick="activeAbility('vertical')">↕️(<span id="stock-vertical">0</span>)</button>
+  <button class="abilities" onclick="useAbility('bomb')">💣(<span id="stock-bomb">0</span>)</button>
+</div>
+
+    <div id="game-container">
+        <div id="grid"></div>
+        
+        <div id="game-over">Game Over! <br> 
+           <button id="restartBtn">🔄 Restart</button>
+        </div>
+    </div>
+
+    <div id="win-message" style="display: none;">
+    <h2>Selamat! Kamu Menang! 🎉</h2>
+    <button onclick="restartGame()">Main Lagi</button>
+</div>
+<div id="score">Blok Tertinggi: 0</div>
+    
+    <audio id="bg-music" loop volume="0.4">
+        <source src="Luar Angkasa.mp3" type="audio/mp3">
+        Browser kamu tidak mendukung elemen audio.
+    </audio>
+    
+      <!-- Kontainer Pengaturan -->
+  <div id="settingsContainer" class="settings-container">
+    <button onclick="toggleSettings()">Close Settings</button>
+    <label for="bgMusic">Background Music: </label>
+    <input style="margin-bottom: 5px;" type="checkbox" id="bgMusic" onchange="toggleMusic()">
+    <p style="color: white" id="donation"></p>
+    <p id="space"></p>
+    <p style="color: white" id="new"></p>
+    <p style="color: white" id="channel"></p>
+    <button onclick="follow()">Follow the Channel</button>
+    <button id="exit" onclick="exit()">Exit to Menu</button>
+  </div>
+
+  <!-- Tombol Pengaturan -->
+  <button id="settingsBtn" onclick="toggleSettings()">⚙️</button>
+
+    <script src="standar.js" defer></script> 
+</body>
+</html>

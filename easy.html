@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: url("latar daun.jpg");
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1; /* tetap dibelakang semua elemen lain */
+}
+
+#rubelDisplay {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #f5e1da;
+  color: #5a2a27;
+  font-weight: bold;
+  padding: 10px 16px;
+  border-radius: 12px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  z-index: 9999;
+}
+
+#rubelContainer {
+  background-color: #f0e6d2;
+  color: #5e4b2c;
+  font-weight: bold;
+  padding: 10px 20px;
+  font-size: 18px;
+  border-radius: 12px;
+  width: fit-content;
+  margin: 10px auto;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  text-align: center;
+  font-family: 'Arial', sans-serif;
+}
+
+h1 {
+  font-size: 48px;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+  text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 255, 0, 0.4);
+}
+
+#make {
+  color: white;
+  position: absolute;
+  top: 95%;
+  left: 33%;
+  transform: translate(-95, -33);
+}
+
+#game-container {
+  box-shadow: 0px 4px 6px rgba(0, 0, 0.2);
+    position: relative;
+    background: #d8e2e9;
+    margin-bottom: 5px;
+    padding: 10px; /* Kurangi padding biar border tidak tebal */
+    border-radius: 10px;
+    display: inline-block;
+}
+
+#grid {
+    display: grid;
+    grid-template-columns: repeat(4, 80px);
+    grid-template-rows: repeat(4, 80px);
+    gap: 5px; /* Kurangi gap biar lebih proporsional */
+    background-color: #ccd6dd;
+    padding: 5px; /* Sesuaikan padding */
+    border-radius: 10px;
+    position: relative;
+}
+
+.cell {
+    width: 75px; /* Sedikit lebih besar biar pas */
+    height: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: #aeb6be;
+    transition: transform 0.15s ease-out; /* Perbaiki animasi biar nggak bergetar */
+}
+
+/* Animasi tile baru hanya untuk yang benar-benar baru */
+@keyframes newTile {
+    from {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.new-tile {
+    animation: newTile 0.15s ease-out;
+}
+
+.tile {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: lightgray;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: transform 0.15s ease-in-out;
+}
+
+/* Warna angka */
+.cell[data-value="2"] { background: #EEE4DA; color: #776e65; }
+.cell[data-value="4"] { background: #ede0c8; color: #776e65; }
+.cell[data-value="8"] { background: #f2b179; color: white; }
+.cell[data-value="16"] { background: #f59563; color: white; }
+.cell[data-value="32"] { background: #f67c5f; color: white; }
+.cell[data-value="64"] { background: #f65e3b; color: white; }
+.cell[data-value="128"] { background: #edcf72; color: white; }
+.cell[data-value="256"] { background: #edcc61; color: white; }
+.cell[data-value="512"] { background: #edc850; color: white; }
+.cell[data-value="1024"] { background: #edc53f; color: white; }
+.cell[data-value="2048"] { background: #edc22e; color: white; }
+
+#game-over {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    border-radius: 10px;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 18px;
+    border: none;
+    background: #8f7a66;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background: #776e65;
+}
+
+#settings-menu {
+    position: absolute; 
+    bottom: 20px; /* Sesuaikan biar muncul di luar panel */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999; /* Pastikan tombolnya ada di atas */
+    background-color: rgba(0, 0, 0, 0.7); /* Biar lebih terlihat */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button {
+    padding: 10px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+#musicBtn {
+  position: absolute;
+  top: 20vh;
+  left: 78%;
+  transform: translate(-50, -50);
+  margin: 5px;
+  background-color: whitesmoke;
+}
+
+#score {
+  color: white;
+  position: absolute;
+  top: 84%;
+  margin: 10px;
+}
+
+  </style>
+  <title></title>
+</head>
+
+<body>
+  
+  <canvas id="games"></canvas>
+    <h1>1024 Mode</h1>
+    <p id="make">Made By: Kz.Studio</p>
+    
+    <div id="rubelDisplay">Rubel: 0</div>
+    
+    <div id="game-container">
+        <div id="grid"></div>
+        <div id="game-over">Game Over! <br> 
+           <button id="restartBtn">🔄 Restart</button>
+        </div>
+    </div>
+    
+    <div id="win-message" style="display: none;">
+    <h2>Selamat! Kamu Menang! 🎉</h2>
+    <button onclick="restartGame()">Main Lagi</button>
+</div>
+<div id="score">Blok Tertinggi: 0</div>
+    
+    <audio id="bg-music" loop volume="0.4">
+        <source src="Luar Angkasa.mp3" type="audio/mp3">
+        <source src="Pixels.mp3" type="audio/mp3">
+        Browser kamu tidak mendukung elemen audio.
+    </audio>
+    <button id="musicBtn">🔊</button>
+  
+  <script>
+let board = Array(4).fill().map(() => Array(4).fill(0));
+let touchStartX = 0, touchStartY = 0;
+let touchEndX = 0, touchEndY = 0;
+
+document.addEventListener("DOMContentLoaded", () => {
+    restartGame();
+    addTouchControls(); // Tambahin swipe buat Android
+});
+
+document.addEventListener("touchstart", function(e) {
+  const target = e.target;
+  
+  // Cegah swipe hanya pada area selain tombol dan elemen yang perlu diinteraksikan
+  if (target.closest("button") || target.closest(".allow-touch")) {
+    // Biarkan interaksi tombol tetap berjalan
+    return;
+  }
+  
+  // Hentikan default browser behavior (misal swipe)
+  e.preventDefault();
+}, { passive: false });
+
+// Fungsi buat detect swipe
+function addTouchControls() {
+    document.addEventListener("touchstart", (event) => {
+        touchStartX = event.touches[0].clientX;
+        touchStartY = event.touches[0].clientY;
+    });
+
+    document.addEventListener("touchend", (event) => {
+        touchEndX = event.changedTouches[0].clientX;
+        touchEndY = event.changedTouches[0].clientY;
+        handleSwipe();
+    });
+}
+
+function handleSwipe() {
+    let deltaX = touchEndX - touchStartX;
+    let deltaY = touchEndY - touchStartY;
+    let moved = false;
+
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        moved = deltaX > 50 ? moveRight() : deltaX < -50 ? moveLeft() : false;
+    } else {
+        moved = deltaY > 50 ? moveDown() : deltaY < -50 ? moveUp() : false;
+    }
+    
+if (moved) {
+  console.log("Tile baru ditambahkan!");
+  animateSwipe(deltaX, deltaY);
+  const startTime = performance.now();
+  setTimeout(() => {
+    const endTime = performance.now();
+    console.log(`Waktu yang dibutuhkan: ${endTime - startTime} milidetik`);
+    addRandomTile();
+    updateBoard(); // Update tampilan papan setelah tile baru muncul
+  }, 5); // Atur waktu munculnya tile baru (dalam milidetik)
+}
+}
+
+// Fungsi buat animasi swipe
+function animateSwipe(deltaX, deltaY) {
+  let cells = document.querySelectorAll(".cell");
+  let dx = deltaX > 0 ? "20px" : deltaX < 0 ? "-20px" : "0px";
+  let dy = deltaY > 0 ? "20px" : deltaY < 0 ? "-20px" : "0px";
+
+  cells.forEach((cell) => {
+    if (cell.textContent !== "") {
+      cell.style.transform = `translate(${dx}, ${dy})`;
+      setTimeout(() => {
+        cell.style.transform = "";
+      }, 200);
+    }
+  });
+}
+
+function addRandomTile() {
+  let emptyCells = [];
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if (board[r][c] === 0) {
+        emptyCells.push({ r, c });
+      }
+    }
+  }
+
+  if (emptyCells.length === 0) return;
+
+  let highestTile = Math.max(...board.flat());
+  let tileValues, probabilities;
+
+  if (highestTile < 16) {
+    tileValues = [2, 4];
+    probabilities = [0.85, 0.15];
+} else if (highestTile < 128) {
+    tileValues = [2, 4, 8, 16];
+    probabilities = [0.4, 0.3, 0.2, 0.1];  
+} else if (highestTile < 512) {
+    tileValues = [2, 4, 8, 16, 32, 64];
+    probabilities = [0.3, 0.25, 0.2, 0.15, 0.07, 0.03];
+} else {
+    tileValues = [2, 4, 8, 16, 32, 64, 128];
+    probabilities = [0.2, 0.2, 0.2, 0.15, 0.15, 0.08, 0.02];
+}
+
+  function getRandomTile() {
+    let rand = Math.random();
+    let cumulative = 0;
+    for (let i = 0; i < tileValues.length; i++) {
+      cumulative += probabilities[i];
+      if (rand < cumulative) return tileValues[i];
+    }
+    return tileValues[tileValues.length - 1]; // fallback jika ada kesalahan
+  }
+
+  
+let randomValue = Math.random();
+if (randomValue < 1) { 
+  // Tambah 1 tile
+  let { r, c } = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+  board[r][c] = getRandomTile();
+} 
+}
+
+// Update tampilan papan dengan animasi tile baru
+function updateBoard() {
+    let grid = document.getElementById("grid");
+    grid.innerHTML = "";
+
+    for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+            let cell = document.createElement("div");
+            cell.classList.add("cell");
+            if (board[r][c] !== 0) {
+                cell.textContent = board[r][c];
+                cell.setAttribute("data-value", board[r][c]);
+                cell.classList.add("new-tile");
+            }
+            grid.appendChild(cell);
+        }
+    }
+
+    if (isGameOver()) document.getElementById("game-over").style.display = "block";
+}
+
+const naudio = new Audio("efekGeser.mp3");
+
+function efekGeser() {
+  let sound = naudio;
+  sound.currentTime = 0;
+  sound.volume = 0.7;
+  sound.play();
+}
+
+let rubel = parseInt(localStorage.getItem('rubel')) || 0;
+
+function moveLeft() {
+    let moved = false;
+    for (let r = 0; r < 4; r++) {
+        let newRow = board[r].filter(val => val !== 0);
+        for (let i = 0; i < newRow.length - 1; i++) {
+            if (newRow[i] === newRow[i + 1]) {
+                newRow[i] *= 2;
+                rubel += newRow[i];
+                localStorage.setItem('rubel', rubel);
+                updateRubelDisplay();
+                newRow.splice(i + 1, 1);
+                newRow.push(0);
+            }
+        }
+        while (newRow.length < 4) newRow.push(0);
+        if (board[r].toString() !== newRow.toString()) moved = true;
+        board[r] = newRow;
+    }
+    updateBoard();
+    return moved;
+}
+
+function moveRight() {
+    let moved = false;
+    for (let r = 0; r < 4; r++) {
+        let newRow = board[r].filter(val => val !== 0).reverse();
+        for (let i = 0; i < newRow.length - 1; i++) {
+            if (newRow[i] === newRow[i + 1]) {
+                newRow[i] *= 2;
+                rubel += newRow[i];
+localStorage.setItem('rubel', rubel);
+updateRubelDisplay();
+                newRow.splice(i + 1, 1);
+                newRow.push(0);
+            }
+        }
+        while (newRow.length < 4) newRow.push(0);
+        newRow.reverse();
+        if (board[r].toString() !== newRow.toString()) moved = true;
+        board[r] = newRow;
+    }
+    updateBoard();
+    return moved;
+}
+
+function moveUp() {
+    let moved = false;
+    for (let c = 0; c < 4; c++) {
+        let newCol = [];
+        for (let r = 0; r < 4; r++) if (board[r][c] !== 0) newCol.push(board[r][c]);
+        for (let i = 0; i < newCol.length - 1; i++) {
+            if (newCol[i] === newCol[i + 1]) {
+                newCol[i] *= 2;
+                rubel += newCol[i];
+localStorage.setItem('rubel', rubel);
+updateRubelDisplay();
+                newCol.splice(i + 1, 1);
+                newCol.push(0);
+            }
+        }
+        while (newCol.length < 4) newCol.push(0);
+        for (let r = 0; r < 4; r++) {
+            if (board[r][c] !== newCol[r]) moved = true;
+            board[r][c] = newCol[r];
+        }
+    }
+    updateBoard();
+    return moved;
+}
+
+function moveDown() {
+    let moved = false;
+    for (let c = 0; c < 4; c++) {
+        let newCol = [];
+        for (let r = 0; r < 4; r++) if (board[r][c] !== 0) newCol.push(board[r][c]);
+        newCol.reverse();
+        for (let i = 0; i < newCol.length - 1; i++) {
+            if (newCol[i] === newCol[i + 1]) {
+                newCol[i] *= 2;
+                rubel += newCol[i];
+localStorage.setItem('rubel', rubel);
+updateRubelDisplay();
+                newCol.splice(i + 1, 1);
+                newCol.push(0);
+            }
+        }
+        while (newCol.length < 4) newCol.push(0);
+        newCol.reverse();
+        for (let r = 0; r < 4; r++) {
+            if (board[r][c] !== newCol[r]) moved = true;
+            board[r][c] = newCol[r];
+        }
+    }
+    updateBoard();
+    return moved;
+}
+
+// Fungsi mengecek apakah masih bisa bermain (Game Over)
+function isGameOver() {
+    for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+            if (board[r][c] === 0) return false; // Masih ada tempat kosong
+            if (c < 3 && board[r][c] === board[r][c + 1]) return false; // Bisa geser kanan
+            if (r < 3 && board[r][c] === board[r + 1][c]) return false; // Bisa geser bawah
+        }
+    }
+    
+    return true; // Tidak ada gerakan yang bisa dilakukan
+}
+let highestTile = 0; // Simpan skor tertinggi
+
+function checkWin() {
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if (board[r][c] === 1024) {
+        document.getElementById("win-message").style.display = "block";
+        bgMusic.pause();
+        musicBtn.innerText = "🔇";
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function updateRubelDisplay() {
+    document.getElementById('rubelDisplay').textContent = "Rubel: " + rubel;
+}
+
+localStorage.setItem('rubel', rubel);
+updateRubelDisplay();
+
+function updateScore() {
+  let maxTile = Math.max(...board.flat()); // Cari angka terbesar di board
+  highestTile = Math.max(highestTile, maxTile); // Update kalau lebih besar
+  
+  document.getElementById("score").innerText = `Blok Tertinggi: ${highestTile}`;
+}
+
+function updateBoard() {
+  let grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      let cell = document.createElement("div");
+      cell.classList.add("cell");
+      if (board[r][c] !== 0) {
+        cell.textContent = board[r][c];
+        cell.setAttribute("data-value", board[r][c]);
+        cell.classList.add("new-tile");
+      }
+      grid.appendChild(cell);
+    }
+  }
+  
+  updateScore(); // Update skor tiap kali papan diperbarui
+  updateRubelDisplay(); // update rubel tiap kali papan diperbarui
+  
+  if (isGameOver()) {
+    document.getElementById("game-over").style.display = "block";
+  } else {
+    checkWin();
+  }
+}
+
+// Fungsi untuk restart game
+function restartGame() {
+    board = Array(4).fill().map(() => Array(4).fill(0));
+    addRandomTile(); // Pastikan ada satu angka awal
+    updateBoard();
+    updateRubelDisplay();
+    document.getElementById("game-over").style.display = "none";
+
+    // Reset musik agar bisa dimainkan lagi
+    bgMusic.currentTime = 0;
+}
+
+// Pastikan game mulai dengan angka awal
+document.addEventListener("DOMContentLoaded", () => {
+    restartGame();
+    updateRubelDisplay();
+    addTouchControls(); // Tambahin kontrol swipe buat Android
+});
+
+ const bgMusic = document.getElementById("bg-music");
+ const musicBtn = document.getElementById("musicBtn");
+
+// Fungsi untuk memutar musik setelah interaksi pertama
+function playMusic() {
+    bgMusic.play().then(() => {
+        console.log("Musik diputar otomatis setelah interaksi.");
+        document.removeEventListener("click", playMusic);
+        document.removeEventListener("keydown", playMusic);
+        document.removeEventListener("touchstart", playMusic);
+    }).catch(err => {
+        console.error("Gagal memutar musik:", err);
+    });
+}
+
+// Tambahkan event listener untuk menangkap interaksi pertama
+document.addEventListener("click", playMusic);
+document.addEventListener("keydown", playMusic);
+document.addEventListener("touchstart", playMusic);
+
+// Loop musik saat selesai
+bgMusic.addEventListener("ended", () => {
+    bgMusic.currentTime = 0; // Kembali ke awal
+    bgMusic.play(); // Mainkan lagi
+});
+
+// Fungsi tombol musik
+musicBtn.addEventListener("touchend", () => {
+    if (bgMusic.paused) {
+        bgMusic.play();
+        musicBtn.innerText = "🔊";
+    } else {
+        bgMusic.pause();
+        musicBtn.innerText = "🔇";
+    }
+});
+
+const restartBtn = document.getElementById("restartBtn"); // Ambil tombol restart
+const gameBoard = document.getElementById("game-board"); // Ambil elemen permainan
+
+restartBtn.addEventListener("touchend", () => {
+    resetGame();
+});
+
+function resetGame() {
+board = Array(4).fill().map(() => Array(4).fill(0));
+    addRandomTile(); // Pastikan ada satu angka awal
+    updateBoard();
+    document.getElementById("game-over").style.display = "none";
+
+
+bgMusic.currentTime = 0;
+    startGame();
+}
+
+function startGame() {
+    console.log("Game dimulai ulang!");
+addRandomTile();
+
+bgMusic.currentTime = 0;
+}
+
+  </script>
+  
+</body>
+
+</html>

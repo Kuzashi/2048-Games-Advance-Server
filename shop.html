@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Shop - 2048 Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #faf8ef;
+      padding: 20px;
+    }
+    #shop {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .ability {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .ability:hover {
+      background: #f0f0f0;
+    }
+    button {
+      background: #8f7a66;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+      width: 100%;
+    }
+    #rubel-counter {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    .ability h3 {
+      margin-top: 0;
+      color: #8f7a66;
+    }
+    .stock {
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div id="shop">
+    <h1>🛒 Toko Ability</h1>
+    <div id="rubel-counter">Рубль: <span id="rubel-amount">0</span></div>
+    
+    <div class="ability" onclick="buyAbility('rocket')">
+      <h3>🚀 Rocket</h3>
+      <p>Hancurkan 4 tile acak</p>
+      <p>Harga: <strong>300 Rubel</strong></p>
+      <p class="stock">Stok: <span id="stock-rocket">0</span></p>
+    </div>
+    
+    <div class="ability" onclick="buyAbility('horizontal')">
+      <h3>↔️ Horizontal Blast</h3>
+      <p>Hapus 1 baris horizontal</p>
+      <p>Harga: <strong>260 Rubel</strong></p>
+      <p class="stock">Stok: <span id="stock-horizontal">0</span></p>
+    </div>
+    
+    <div class="ability" onclick="buyAbility('vertical')">
+      <h3>↕️ Vertical Blast</h3>
+      <p>Hapus 1 baris vertikal</p>
+      <p>Harga: <strong>260 Rubel</strong></p>
+      <p class="stock">Stok: <span id="stock-vertical">0</span></p>
+    </div>
+
+    <div class="ability" onclick="buyAbility('bomb')">
+      <h3>💣 Bomb</h3>
+      <p>Hapus 4 kotak area</p>
+      <p>Harga: <strong>200 Rubel</strong></p>
+      <p class="stock">Stok: <span id="stock-bomb">0</span></p>
+    </div>
+    
+    <button onclick="closeShop()">Kembali ke Game</button>
+  </div>
+
+  <script>
+    let rubel = parseInt(localStorage.getItem('rubel'));
+    rubel = isNaN(rubel) ? 0 : rubel;
+
+    let abilities = JSON.parse(localStorage.getItem('abilities'));
+    if (typeof abilities !== 'object' || abilities === null) {
+      abilities = {
+        rocket: 0,
+        horizontal: 0,
+        vertical: 0,
+        bomb: 0
+      };
+    }
+
+    const prices = {
+      rocket: 300,
+      horizontal: 260,
+      vertical: 260,
+      bomb: 200
+    };
+
+    function updateRubelUI() {
+      document.getElementById('rubel-amount').textContent = rubel;
+    }
+
+    function updateStockUI() {
+      for (let key in abilities) {
+        document.getElementById(`stock-${key}`).textContent = abilities[key];
+      }
+    }
+
+    function buyAbility(abilityName) {
+      if (rubel >= prices[abilityName]) {
+        rubel -= prices[abilityName];
+        abilities[abilityName] += 1;
+
+        localStorage.setItem('rubel', rubel);
+        localStorage.setItem('abilities', JSON.stringify(abilities));
+
+        updateRubelUI();
+        updateStockUI();
+
+        alert(`Berhasil beli ${abilityName}!`);
+      } else {
+        alert("Rubel tidak cukup!");
+      }
+    }
+
+    function closeShop() {
+      location.replace("menu.html"); // Ganti sesuai halaman utama
+    }
+
+    // Init saat halaman dibuka
+    updateRubelUI();
+    updateStockUI();
+  </script>
+</body>
+</html>

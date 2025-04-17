@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pilih Login</title>
+    <link rel="stylesheet" href="c-l.css">
+</head>
+<body>
+
+  <div class="g-recaptcha" data-sitekey="6LeEOxsrAAAAAMz3fDu7PdbdIzSkFZoovIlbpIrY"></div>
+</form>
+
+    <div class="container">
+        <h2>Pilih Cara Masuk</h2>
+        <button onclick="goToLogin()">Login / Sign-Up</button>
+        <button onclick="guestMode()">Main Sebagai Tamu</button>
+    </div>
+    
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+    
+    const naudio = new Audio ("efekTekan.mp3");
+    
+    function efekTekan() {
+      let sound = naudio;
+      sound.currentTime = 0;
+      sound.volume = 1;
+      sound.play();
+    }
+    
+        function goToLogin() {
+          efekTekan();
+            location.replace("login.html");
+        }
+
+        function guestMode() {
+                    efekTekan();
+                    location.replace("menu.html"); 
+                }
+    </script>
+</body>
+</html>

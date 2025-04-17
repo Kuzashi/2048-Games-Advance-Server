@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captcha</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: radial-gradient(circle at center, #000428, #004e92);
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+}
+
+mark {
+  color: #333333;
+  background-color: #FFFF00;
+}
+
+    /* Bintang-bintang latar belakang */
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 2s infinite;
+      z-index: -1;
+    }
+
+    /* Animasi bintang berkilauan */
+    @keyframes twinkle {
+      0%, 100% {
+        opacity: 0.8;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.3;
+        transform: scale(0.5);
+      }
+    }
+
+.captcha-container {
+    background: #fff;
+    width: 300px;
+    margin: 100px auto;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+canvas {
+    border: 1px solid #000;
+    margin-bottom: 10px;
+    background: #ddd;
+    border-radius: 5px;
+}
+
+input {
+    width: 100vw;
+    height: 30px;
+    padding-bottom: 8px;
+    font-size: 16px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+button:hover {
+    background: #218838;
+}
+
+#result {
+    font-size: 14px;
+}
+
+#kotakPesan {
+    width: 90%;
+    max-width: 300px;
+    margin: 15px auto;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    text-align: center;
+}
+
+#pesan {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.5;
+}
+    </style>
+</head>
+<body>
+<p style="color: rgba(255, 255, 255, 0.6); position: absolute; top: 2vh; left: 90vw; font-size: 8px">Version: 1.4.0</p>
+    <h2 style="color: white">Masukkan Captcha</h2>
+    <canvas id="captchaCanvas" width="150" height="50"></canvas><br>
+    <input type="text" id="captchaInput" placeholder="Masukkan teks di atas">
+    <button onclick="cekCaptcha()">Submit</button>
+    <p id="result"></p>
+    <div id="kotakPesan">
+    <p id="pesan">Tolong bantu kami menciptakan lingkungan permainan<br>
+    yang baik dan aman tanpa ada gangguan DDOS<br>
+    <br>
+    <p>---</p>
+    <br>
+    Baru sadar kalau ada yang gak paham, gak tau apa itu, sama banyak yang nanya pertanyaan yang sama, jadi gini..<br>
+<br>
+<mark>> Apa itu?</mark><br>
+<i>Jawaban: itu adalah permainan video yang bernama "2048 games", bukan hal hal lain seperti bug, virus, atau apapun.</i><br>
+<br>
+<mark>> Gimana cara mainnya?</mark><br>
+<i>*Jawaban*: Sentuh dan gerakan layar ponsel ke atas, bawah, kanan, atau kiri untuk menggerakkan tile (kotak) yang ada di papan.</i><br>
+<br>
+<mark>> Gunanya ada kotak?</mark><br>
+<i>*Jawaban*: kalian dapat menggabung kotak kotak dengan nilai yang sama, dan mendapat nilai dari gabungan keduanya. Contoh, ada dua kotak dengan nilai 2, mereka bergabung karena kalian menggeser layar akan menghasilkan kotak bernilai 4.</i><br>
+<br>
+<mark>> Tujuan game?</mark><br>
+<i>*Jawaban*: gabung terus kotak sebisa mungkin, sampai mencapai nilai tergantung mode.</i><br>
+<br>
+<mark>> Ada pertanyaan?</mark><br>
+<i>Silahkan hubungi kami dari nomor ini atau dari "Report to Dev" di menu permainannya</i><br>
+<br>
+<strong>*Kami berjanji bahwa itu bukan lah hal yang berbahaya, kami yang akan bertanggung jawab untuk itu.</strong><br>
+<br>
+<br>
+> TTD Kz.Studio</p>
+    </div>
+
+    <script>
+    
+    const createStars = (numStars) => {
+      const body = document.body;
+      
+      for (let i = 0; i < numStars; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star');
+        
+        // Posisi acak untuk bintang
+        star.style.left = `${Math.random() * 100}vw`;
+        star.style.top = `${Math.random() * 100}vh`;
+        
+        // Ukuran acak untuk bintang
+        const size = Math.random() * 3 + 1; // antara 1px hingga 4px
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        body.appendChild(star);
+      }
+    };
+
+    // Membuat 200 bintang latar belakang
+    createStars(200);
+    
+    /* efek suara klik pada captcha */
+    const audio = new Audio ("efekTekan.mp3");
+    
+    function efekTekan() {
+      let sound = audio;
+      sound.currentTime = 0;
+      sound.volume = 1;
+      sound.play();
+    }
+    
+        let captchaText = "";
+
+        function generateCaptcha() {
+            const canvas = document.getElementById("captchaCanvas");
+            const ctx = canvas.getContext("2d");
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$&";
+            
+            captchaText = "";
+            for (let i = 0; i < 6; i++) {
+                captchaText += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "30px Arial";
+            ctx.fillStyle = "#000";
+            ctx.fillText(captchaText, 20, 35);
+        }
+
+        function cekCaptcha() {
+          efekTekan();
+    const userInput = document.getElementById("captchaInput").value.trim(); // Hapus spasi berlebih
+
+    if (userInput === "") { // Cek jika kosong
+        document.getElementById("result").innerText = "⚠️ Isi captcha terlebih dahulu!";
+        result.style.color = "orange";
+        return; // Hentikan fungsi biar gak lanjut ke bawah
+    }
+
+    if (userInput === captchaText) { // cek jika benar
+        document.getElementById("result").innerText = "✅ Captcha benar! Masuk...";
+        result.style.color = "green";
+        setTimeout(() => {
+            location.replace("intro.html");
+        }, 1000);
+    } else { // jika salah
+        document.getElementById("result").innerText = "❌ Captcha salah, coba lagi!";
+        result.style.color = "red";
+        generateCaptcha(); // buat ulang captcha jika user salah memasukan input
+    }
+        }
+
+        window.onload = generateCaptcha;
+        
+        
+        
+    </script>
+
+</body>
+</html>
