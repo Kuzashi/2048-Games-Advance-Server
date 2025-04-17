@@ -7,7 +7,6 @@ body {
     align-items: center;
     height: 100vh;
     background: url('back-ground.jpg');
-    z-index: -2;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -21,7 +20,6 @@ body {
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
     text-align: center;
     width: 320px;
-    z-index: -1;
 }
 
 h2 {
